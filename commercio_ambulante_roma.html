@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ambulante Roma">
+<meta name="theme-color" content="#ffffff">
+<title>Ambulante Roma</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f8f7f4;color:#1a1a18;font-size:15px;line-height:1.6}
+header{background:#fff;border-bottom:0.5px solid #e0ddd4;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));display:flex;align-items:center;gap:10px}
+header h1{font-size:16px;font-weight:500}
+header span{font-size:11px;color:#888;background:#f1efe8;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.tabs{display:flex;gap:0;border-bottom:0.5px solid #e0ddd4;background:#fff;padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab{padding:11px 14px;font-size:12px;cursor:pointer;border-bottom:2px solid transparent;color:#888;transition:all .15s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.tab.active{color:#185fa5;border-bottom-color:#185fa5;font-weight:500}
+.tab:hover:not(.active){color:#444;background:#f8f7f4}
+.panel{display:none;padding:14px 14px;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.panel.active{display:block}
+.search-row{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.search-row input{flex:1;padding:11px 13px;border:0.5px solid #ccc;border-radius:10px;font-size:16px;background:#fff;color:#1a1a18;-webkit-appearance:none}
+.mun-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pill{padding:7px 13px;border-radius:20px;border:0.5px solid #ccc;font-size:13px;cursor:pointer;background:#fff;color:#555;transition:all .12s;-webkit-tap-highlight-color:transparent}
+.pill.active{background:#e6f1fb;color:#0c447c;border-color:#85b7eb;font-weight:500}
+.pill.all.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.via-table-wrap{max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch;border:0.5px solid #e0ddd4;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8f7f4;padding:8px 12px;text-align:left;font-weight:500;font-size:12px;color:#555;position:sticky;top:0;border-bottom:0.5px solid #e0ddd4}
+td{padding:8px 10px;border-bottom:0.5px solid #f0ede6;color:#333;word-break:break-word}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8f7f4}
+.mun-badge{display:inline-block;font-size:11px;padding:2px 7px;border-radius:12px;background:#f1efe8;color:#5f5e5a;margin-right:4px}
+.count-info{font-size:12px;color:#888}
+.dist-card{background:#fff;border:0.5px solid #e0ddd4;border-radius:10px;padding:14px;margin-bottom:10px}
+.dist-card h3{font-size:14px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dist-badge{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:500}
+.dist-badge.red{background:#fcebeb;color:#a32d2d}
+.dist-badge.amber{background:#faeeda;color:#633806}
+.dist-rows{font-size:13px;color:#555}
+.dist-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #f0ede6;gap:8px}
+.dist-row:last-child{border-bottom:none}
+.dist-m{font-weight:500;color:#1a1a18;min-width:70px;text-align:right;white-space:nowrap;font-size:12px}
+.alert-box{background:#fcebeb;border:0.5px solid #f09595;border-radius:8px;padding:12px 14px;font-size:13px;color:#791f1f;margin-bottom:12px}
+.mode-switch{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.mode-btn{padding:10px 16px;border-radius:10px;border:0.5px solid #ccc;font-size:14px;cursor:pointer;background:#fff;color:#555;transition:all .12s;-webkit-tap-highlight-color:transparent;min-height:44px}
+.mode-btn.active{background:#1d9e75;color:#fff;border-color:#1d9e75}
+.zone-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.zone-card{background:#fff;border:0.5px solid #e0ddd4;border-radius:10px;padding:13px 15px}
+.zone-card.top{border-color:#1d9e75;border-width:1.5px}
+.zone-top-badge{font-size:11px;background:#e1f5ee;color:#085041;padding:2px 8px;border-radius:12px;display:inline-block;margin-bottom:5px}
+.zone-name{font-size:15px;font-weight:500;margin-bottom:3px}
+.zone-sub{font-size:12px;color:#888;margin-bottom:7px}
+.zone-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.tag{font-size:11px;padding:2px 7px;border-radius:12px}
+.tag.blue{background:#e6f1fb;color:#0c447c}
+.income-bar-wrap{display:flex;align-items:center;gap:8px;margin-top:5px}
+.income-label{font-size:11px;color:#888;min-width:70px}
+.income-bar-bg{flex:1;height:5px;background:#f1efe8;border-radius:3px}
+.income-bar{height:5px;border-radius:3px;background:#1d9e75}
+.income-val{font-size:11px;color:#555;min-width:55px;text-align:right}
+.zone-note{font-size:12px;color:#666;margin-top:7px;border-top:0.5px solid #f0ede6;padding-top:6px}
+.no-results{text-align:center;padding:32px;color:#888;font-size:13px}
+.filter-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.filter-row label{font-size:12px;color:#888}
+select{padding:9px 10px;border:0.5px solid #ccc;border-radius:8px;font-size:15px;background:#fff;color:#1a1a18;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23888' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+
+/* VERIFICA VIA */
+.verifica-wrap{max-width:100%}
+.v-input-group{background:#fff;border:0.5px solid #e0ddd4;border-radius:12px;padding:14px;margin-bottom:8px}
+.v-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:stretch}
+.v-row:last-child{margin-bottom:0}
+.v-row input{flex:1;min-width:0;padding:13px 14px;border:0.5px solid #ccc;border-radius:10px;font-size:16px;background:#fff;color:#1a1a18;-webkit-appearance:none}
+.v-row input:focus{outline:none;border-color:#378add;box-shadow:0 0 0 2px #e6f1fb}
+.v-row input.civico{width:80px;flex:0 0 80px}
+.v-row button{padding:13px 20px;background:#185fa5;color:#fff;border:none;border-radius:10px;font-size:15px;cursor:pointer;font-weight:500;white-space:nowrap;-webkit-tap-highlight-color:transparent;min-height:48px}
+.v-row button:hover{background:#0c447c}
+.v-row button:disabled{background:#b4b2a9;cursor:not-allowed}
+.v-hint{font-size:12px;color:#888;margin-bottom:16px;line-height:1.5}
+.v-loading{text-align:center;padding:28px;color:#888;font-size:13px}
+.v-result{background:#fff;border:0.5px solid #e0ddd4;border-radius:12px;overflow:hidden;margin-top:4px}
+.v-result-header{padding:14px 14px;display:flex;align-items:flex-start;gap:12px}
+.v-verdict{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;font-weight:500}
+.v-verdict.ok{background:#e1f5ee;color:#085041}
+.v-verdict.warn{background:#faeeda;color:#633806}
+.v-verdict.no{background:#fcebeb;color:#791f1f}
+.v-via-name{font-size:15px;font-weight:500;margin-bottom:2px}
+.v-coords{font-size:12px;color:#888;margin-bottom:3px}
+.v-status-text{font-size:13px;font-weight:500}
+.v-status-text.ok{color:#085041}
+.v-status-text.warn{color:#854f0b}
+.v-status-text.no{color:#791f1f}
+.v-checks{padding:0 14px 12px}
+.v-check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid #f0ede6}
+.v-check-item:last-child{border-bottom:none}
+.v-check-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px;font-weight:500}
+.v-check-icon.ok{background:#e1f5ee;color:#085041}
+.v-check-icon.warn{background:#faeeda;color:#633806}
+.v-check-icon.no{background:#fcebeb;color:#791f1f}
+.v-check-icon.info{background:#f1efe8;color:#5f5e5a}
+.v-check-label{font-size:13px;font-weight:500;color:#1a1a18}
+.v-check-detail{font-size:12px;color:#666;margin-top:2px;line-height:1.5}
+.v-map-link{display:inline-flex;align-items:center;gap:5px;margin:8px 14px 12px;font-size:13px;color:#185fa5;text-decoration:none;border:0.5px solid #b5d4f4;border-radius:8px;padding:9px 14px;background:#e6f1fb;min-height:44px}
+.v-map-link:hover{background:#b5d4f4}
+.v-disclaimer{background:#f8f7f4;border-top:0.5px solid #e0ddd4;padding:10px 14px;font-size:11px;color:#888;line-height:1.5}
+.v-potenziale{padding:12px 14px;border-top:0.5px solid #e0ddd4}
+.v-pot-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.v-pot-title{font-size:13px;font-weight:500;color:#1a1a18}
+.v-pot-score{font-size:22px;font-weight:500}
+.v-pot-score.alto{color:#085041}
+.v-pot-score.medio{color:#854f0b}
+.v-pot-score.basso{color:#791f1f}
+.v-pot-bars{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:10px}
+.v-pot-bar-row{display:flex;flex-direction:column;gap:3px}
+.v-pot-bar-label{font-size:11px;color:#888;display:flex;justify-content:space-between}
+.v-pot-bar-label span{font-weight:500;color:#1a1a18}
+.v-pot-bar-bg{height:6px;background:#f1efe8;border-radius:3px}
+.v-pot-bar-fill{height:6px;border-radius:3px;transition:width .4s}
+.v-pot-bar-fill.verde{background:#1d9e75}
+.v-pot-bar-fill.ambra{background:#ba7517}
+.v-pot-bar-fill.rosso{background:#e24b4a}
+.v-pot-desc{font-size:12px;color:#555;line-height:1.6;background:#f8f7f4;border-radius:8px;padding:10px 12px}
+.v-pot-zona-match{display:inline-flex;align-items:center;gap:5px;font-size:11px;background:#e1f5ee;color:#085041;border-radius:12px;padding:3px 9px;margin-bottom:8px}
+.v-pot-timing{font-size:12px;color:#666;margin-top:6px;display:flex;align-items:center;gap:5px}
+.v-pot-timing strong{color:#1a1a18}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Commercio ambulante Roma</h1></div>
+  <span>DAC 101/2023 · Allegato A + Art. 40</span>
+</header>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">Vie vietate</div>
+  <div class="tab" onclick="switchTab(1)">Distanze</div>
+  <div class="tab" onclick="switchTab(2)">Zone</div>
+  <div class="tab" onclick="switchTab(3)">Verifica via</div>
+</div>
+
+<!-- PANEL 0 -->
+<div class="panel active" id="p0">
+  <div class="alert-box"><strong>Municipio I e II:</strong> divieto totale su tutto il territorio per tutela storica, artistica e ambientale. Non sono elencate vie singole.</div>
+  <div class="search-row">
+    <input type="text" id="viaSearch" placeholder="Cerca una via..." oninput="filterVie()">
+    <span id="viaCount" class="count-info"></span>
+  </div>
+  <div class="mun-pills" id="munPills"></div>
+  <div class="via-table-wrap">
+    <table><thead><tr><th style="width:72px">Municipio</th><th>Via / Piazza / Area</th></tr></thead><tbody id="viaBody"></tbody></table>
+  </div>
+</div>
+
+<!-- PANEL 1 -->
+<div class="panel" id="p1">
+  <div class="dist-card"><h3><span class="dist-badge red">DIVIETO ASSOLUTO</span> Esclusioni totali</h3><div class="dist-rows"><div class="dist-row"><span>Territorio Municipio I e II</span><span class="dist-m">intero territorio</span></div><div class="dist-row"><span>Vie dell'Allegato A per ogni Municipio</span><span class="dist-m">intera via</span></div><div class="dist-row"><span>Strade viabilità principale PGTU (Delibera AC 21/2015)</span><span class="dist-m">intera strada</span></div></div></div>
+  <div class="dist-card"><h3><span class="dist-badge red">500 m</span> Posteggi fissi e mercati (art. 40 c.9)</h3><div class="dist-rows"><div class="dist-row"><span>Da ogni posteggio di commercio su area pubblica (art. 4)</span><span class="dist-m">500 m</span></div></div></div>
+  <div class="dist-card"><h3><span class="dist-badge red">200 m</span> Strutture sensibili (art. 40 c.9 / c.11 / c.12)</h3><div class="dist-rows"><div class="dist-row"><span>Ospedali</span><span class="dist-m">200 m</span></div><div class="dist-row"><span>Stazioni metro e ferroviarie (dagli accessi)</span><span class="dist-m">200 m</span></div><div class="dist-row"><span>Autostazioni</span><span class="dist-m">200 m</span></div><div class="dist-row"><span>Sedi istituzionali Stato e soggetti pubblici</span><span class="dist-m">200 m</span></div><div class="dist-row"><span>Aree vincolate D.Lgs. 42/2004 (beni culturali/paesaggio)</span><span class="dist-m">200 m</span></div><div class="dist-row"><span>Zone vincolate (inclusi siti religiosi)</span><span class="dist-m">200 m</span></div></div></div>
+  <div class="dist-card"><h3><span class="dist-badge amber">50 m</span> Strade confluenti (art. 40 c.12)</h3><div class="dist-rows"><div class="dist-row"><span>Strade che confluiscono nelle vie di viabilità principale PGTU</span><span class="dist-m">50 m</span></div></div></div>
+  <div class="dist-card"><h3><span class="dist-badge amber">Regole operative</span> Limiti comportamentali (art. 40)</h3><div class="dist-rows"><div class="dist-row"><span>Stesso posto nello stesso giorno (max fermate)</span><span class="dist-m">2 volte</span></div><div class="dist-row"><span>Sosta: solo per consegna merce e incasso</span><span class="dist-m">tempo minimo</span></div><div class="dist-row"><span>Veicolo immatricolato ai sensi D.Lgs. 285/1992</span><span class="dist-m">obbligatorio</span></div><div class="dist-row"><span>Vietato banco aperto fisso o munito di ruote</span><span class="dist-m">divieto assoluto</span></div></div></div>
+  <div class="dist-card"><h3><span class="dist-badge amber">Temporaneo</span> Fiere e mercati (art. 40 c.19)</h3><div class="dist-rows"><div class="dist-row"><span>Roma Capitale può vietare in tutto il Comune durante fiere/mercati</span><span class="dist-m">tutto il comune</span></div></div></div>
+</div>
+
+<!-- PANEL 2 -->
+<div class="panel" id="p2">
+  <div class="mode-switch">
+    <button class="mode-btn active" id="btnAll" onclick="setMode('all')">Tutte le zone</button>
+    <button class="mode-btn" id="btnTop" onclick="setMode('top')">Solo top consigliate</button>
+  </div>
+  <div class="filter-row">
+    <label>Ordina per:</label>
+    <select id="sortSel" onchange="renderZone()"><option value="rank">Priorità consigliata</option><option value="income">Reddito</option><option value="traffic">Passaggio</option></select>
+    <label>Zona:</label>
+    <select id="areaSel" onchange="renderZone()"><option value="all">Tutta Roma</option><option value="nord">Roma Nord</option><option value="centro">Centro / Centro-ovest</option><option value="sud">Roma Sud</option><option value="sudest">Roma Sud-Est</option></select>
+  </div>
+  <div class="zone-grid" id="zoneGrid"></div>
+</div>
+
+<!-- PANEL 3: VERIFICA VIA -->
+<div class="panel" id="p3">
+  <div class="verifica-wrap">
+    <div class="v-input-group">
+      <div class="v-row">
+        <input type="text" id="vInput" placeholder="Nome della via (es. Via Tiburtina)" autocomplete="off">
+        <input type="text" id="civInput" class="civico" placeholder="Civico (opz.)">
+        <button id="vBtn" onclick="verificaVia()">Verifica</button>
+      </div>
+    </div>
+    <div class="v-hint">Inserisci il nome completo della via. Il numero civico geolocalizza il punto esatto e permette distanze più precise da ospedali, stazioni metro e strutture sensibili.</div>
+    <div id="vOutput"></div>
+  </div>
+</div>
+
+<script>
+const VIE_NORM={
+  "III":["piazza sempione","via delle alpi apuane","via abetone","piazza monte baldo","viale gargano","via maiella","corso sempione","viale tirreno","via nomentana","viale gottardo","via cimone","via di montesacro","via nomentana vecchia","piazza menenio agrippa","via conca d'oro","piazza conca d'oro","viale jonio","piazzale jonio","via valle melaina","via conti","via nomentana nuova","via ugo ojetti","via franco sacchetti","via niccodemi"],
+  "V":["via casilina","via prenestina","via prenestina bis","via collatina","via dei ruderi di casa calda","via w. tobagi","viale palmiro togliatti","piazza delle camelie","piazza cesare de cupis","via e. longoni","piazzale delle gardenie","via dei castani","viale della primavera","largo della primavera","viale della serenissima","via veroli","via di tor cervara","via tor de' schiavi","via di tor sapienza","via di tor tre teste","viale partenope","via l'aquila","piazza della marranella","via di porta furba","largo preneste","piazzale prenestino","via roberto malatesta","via acqua bullicante","via del pigneto","via torpignattara","piazza michele sanmicheli"],
+  "VI":["via casilina","via prenestina","via prenestina polense","via fontana candida","via vermicino","via prataporci","via di passo lombardo","via lunghezzina","viale dei romanisti","via di tor vergata","via rocca cencia","via di borghesiana","via di tor bella monaca","via collatina","via di lunghezza","via dei giardinetti","via tenuta di torrenova","via d. cambellotti","via p. f. quaglia","via acquaroni","via osteria del finocchio","via di torre maura","via dei ruderi di casa calda","via del fosso di santa maura","via w. tobagi","via di torrenova","via del torraccio di torrenova","via fosso dell'osa","via di torre spaccata","via carcaricola","via dell'acqua vergine","via di salone","via tenuta del cavaliere","via massa san giuliano","via dell'aquila reale","via pietro romano","via mandanici","via c. santarelli","via p. piffetti","via turino di sano","via degli orafi","via siculiana","via p. belon","via tucani","viale s. rita da cascia","largo mengaroni","via merlini","via g. medail","via t. agudio","via d. spondrini","via bernardi","via e. marelli","via riva","via sartirana","via necchi","via e. breda","via s. breda","via dei centauri","via atteone","via chitone","via urania","via teseo","via epimenide","via briareo","via iperione","via dell'albanella","via caltagirone"],
+  "VII":["circonvallazione tuscolana","largo appio claudio","piazza dei consoli","piazza dei tribuni","piazza di cinecittà","piazza don san giovanni bosco","piazza quinto curzio","via marco celio rufo","via anicio gallo","via attio labeone","via caio lelio","via caio manilio","via calpurnio fiamma","via curzio rufo","via degli opimiani","via degli ottavi","via dei fontej","via dei fulvi","via dei lentuli","via dei levii","via dei sulpici","via del quadraro","via dell'aeroporto","via di centocelle","via elio stilone","via fabio rulliano","via flavio stilicone","via livio salinatore","via lucio calpurnio bibulo","via lucio sestio","via marco decumio","via marco fulvio nobiliore","via marco papio","via monte del grano","via orazio pulvillo","via papiria","via ponzio cominio","via publio valerio","via santa maria del buon consiglio","via scribonio curione","via servilio prisco","via sestio calvino","via statilio ottato","via statilio tauro","via telegono","via tito labieno","via tuscolana","via valerio publicola","viale dei consoli","viale dei salesiani","viale giulio agricola","viale palmiro togliatti","viale san giovanni bosco","viale spartaco","via appia nuova","via latina","via dell'arco di travertino","via allumiere","via delle cave","via magnagrecia","piazza dei re di roma","via cerveteri","via aosta","via gino capponi","via cesare baronio","viale furio camillo","via taranto","via la spezia","via britannia","via orvieto","piazzale appio","largo brindisi","via sannio","via albalonga","via etruria","via albenga","via nocera umbra","via valesio","largo colli albani","via mario menghini"],
+  "X":["via orazio dello sbirro","via della paranzella","corso duca di genova","via di saponara","via gino bonichi","piazza anco marzio","via di acilia","piazza dei sicani","via dei misenati","via lucio coilio","via della stazione vecchia","via delle baleniere","via vasco de gama","piazza quarto dei mille","via dante vaglieri","via stefano cansacchi","piazza tor san michele","piazza dei ravennati","pontile di ostia"],
+  "XI":["viale marconi","via della magliana"],
+  "XII":["viale dei colli portuensi","mercato niccolini","piazzale dunant"],
+  "XIV":["via francigena","via di torrevecchia","via federico borromeo","piazza clemente xi"],
+  "XV":["piazzale di ponte milvio","via flaminia","via bolsena","via fiano","via castelnuovo di porto","via riano","viale di tor di quinto","lungotevere maresciallo diaz","piazzale maresciallo diaz","via dei prati della farnesina","via della farnesina","via degli orti della farnesina","via cassia","via girolamo boccardo","via antonio serra","via angelo messedaglia","via leprignano","via bevagna","via roccaporena","via achille loria","via citta della pieve","piazza monteleone da spoleto","via citta di castello","via francesco saverio nitti","via di vigna stelluti","largo di vigna stelluti","via marco besso","via cesare ferrero di cambiano","via gerolamo belloni","via stefano jacini","via francesco ferrara","via vilfredo pareto","via pompeo neri","piazza stefano jacini","via napoleone colajanni","via ghino valenti","via giustino fortunato","via francesco coletti","piazza filippo carli","via sallustio bandini","via luigi bodio","area del borgo storico di isola farnese","area del borgo storico di cesano"]
+};
+
+const VIE_DISPLAY={
+  "III":["Piazza Sempione","Via delle Alpi Apuane","Via Abetone","Piazza Monte Baldo","Viale Gargano","Via Maiella","Corso Sempione","Viale Tirreno","Via Nomentana (tra Via Montanasio e Ponte Nomentano)","Viale Gottardo","Via Cimone","Via di Montesacro","Via Nomentana Vecchia","Piazza Menenio Agrippa","Via Conca d'Oro","Piazza Conca d'Oro","Viale Jonio","Piazzale Jonio","Via Valle Melaina","Via Conti","Via Nomentana Nuova (altezza Bingo)","Via Ugo Ojetti","Via Franco Sacchetti","Via Niccodemi"],
+  "V":["Via Casilina","Via Prenestina","Via Prenestina bis","Via Collatina","Via dei Ruderi di Casa Calda","Via W. Tobagi","Viale Palmiro Togliatti","Piazza delle Camelie","Piazza Cesare de Cupis","Via E. Longoni","Piazzale delle Gardenie","Via dei Castani","Viale della Primavera","Largo della Primavera","Viale della Serenissima","Via Veroli","Via di Tor Cervara","Via Tor de' Schiavi","Via di Tor Sapienza","Via di Tor Tre Teste","Viale Partenope","Via l'Aquila","Piazza della Marranella","Via di Porta Furba","Largo Preneste","Piazzale Prenestino","Via Roberto Malatesta","Via Acqua Bullicante","Via del Pigneto","Via Torpignattara","Piazza Michele Sanmicheli"],
+  "VI":["Via Casilina","Via Prenestina","Via Prenestina Polense","Via Fontana Candida","Via Vermicino","Via Prataporci","Via di Passo Lombardo","Via Lunghezzina","Viale dei Romanisti","Via di Tor Vergata","Via Rocca Cencia","Via di Borghesiana","Via di Tor Bella Monaca","Via Collatina","Via di Lunghezza","Via dei Giardinetti","Via Tenuta di Torrenova","Via D. Cambellotti","Via P. F. Quaglia","Via Acquaroni","Via Osteria del Finocchio","Via di Torre Maura","Via dei Ruderi di Casa Calda","Via del Fosso di Santa Maura","Via W. Tobagi","Via di Torrenova","Via del Torraccio di Torrenova","Via Fosso dell'Osa","Via di Torre Spaccata","Via Carcaricola","Via dell'Acqua Vergine","Via di Salone","Via Tenuta del Cavaliere","Via Massa San Giuliano","Via dell'Aquila Reale","Via Pietro Romano","Via Mandanici","Via C. Santarelli","Via P. Piffetti","Via Turino di Sano","Via degli Orafi","Via Siculiana","Via P. Belon","Via Tucani","Viale S. Rita da Cascia","L.go Mengaroni","Via Merlini","Via G. Medail","Via T. Agudio","Via D. Spondrini","Via Bernardi","Via E. Marelli","Via Riva","Via Sartirana","Via Necchi","Via E. Breda","Via S. Breda","Via dei Centauri","Via Atteone","Via Chitone","Via Urania","Via Teseo","Via Epimenide","Via Briareo","Via Iperione","Via dell'Albanella","Via Caltagirone"],
+  "VII":["Circonvallazione Tuscolana","Largo Appio Claudio","Piazza dei Consoli","Piazza dei Tribuni","Piazza di Cinecittà","Piazza Don San Giovanni Bosco","Piazza Quinto Curzio","Via Marco Celio Rufo","Via Anicio Gallo","Via Attio Labeone","Via Caio Lelio","Via Caio Manilio","Via Calpurnio Fiamma","Via Curzio Rufo","Via degli Opimiani","Via degli Ottavi","Via dei Fontej","Via dei Fulvi","Via dei Lentuli","Via dei Levii","Via dei Sulpici","Via del Quadraro","Via dell'Aeroporto","Via di Centocelle","Via Elio Stilone","Via Fabio Rulliano","Via Flavio Stilicone","Via Livio Salinatore","Via Lucio Calpurnio Bibulo","Via Lucio Sestio","Via Marco Decumio","Via Marco Fulvio Nobiliore","Via Marco Papio","Via Monte del Grano","Via Orazio Pulvillo","Via Papiria","Via Ponzio Cominio","Via Publio Valerio","Via Santa Maria del Buon Consiglio","Via Scribonio Curione","Via Servilio Prisco","Via Sestio Calvino","Via Statilio Ottato","Via Statilio Tauro","Via Telegono","Via Tito Labieno","Via Tuscolana (fino al GRA)","Via Valerio Publicola","Viale dei Consoli","Viale dei Salesiani","Viale Giulio Agricola","Viale Palmiro Togliatti","Viale San Giovanni Bosco","Viale Spartaco","Via Appia Nuova (tutta, fino al GRA)","Via Latina","Via dell'Arco di Travertino","Via Allumiere","Via delle Cave","Via Magnagrecia","Piazza dei Re di Roma","Via Cerveteri","Via Aosta","Via Gino Capponi","Via Cesare Baronio","Viale Furio Camillo","Via Taranto","Via La Spezia","Via Britannia","Via Orvieto","Piazzale Appio","Largo Brindisi","Via Sannio","Via Albalonga","Via Etruria","Via Albenga","Via Nocera Umbra","Via Valesio","Largo Colli Albani","Via Mario Menghini"],
+  "X":["Via Orazio dello Sbirro","Via della Paranzella","Corso Duca di Genova","Via di Saponara","Via Gino Bonichi","Piazza Anco Marzio","Via di Acilia","Piazza dei Sicani","Via dei Misenati","Via Lucio Coilio","Via della Stazione Vecchia","Via delle Baleniere","Via Vasco De Gama","Piazza Quarto dei Mille","Via Dante Vaglieri","Via Stefano Cansacchi","Piazza Tor San Michele","Piazza dei Ravennati","Pontile di Ostia"],
+  "XI":["Viale Marconi","Via Della Magliana"],
+  "XII":["Viale dei Colli Portuensi","Mercato Niccolini","Piazzale Dunant"],
+  "XIV":["Via Francigena","Via di Torrevecchia","Via Federico Borromeo","Piazza Clemente XI"],
+  "XV":["Piazzale di Ponte Milvio","Via Flaminia","Via Bolsena","Via Fiano","Via Castelnuovo di Porto","Via Riano","Viale di Tor di Quinto","Lungotevere Maresciallo Diaz","Piazzale Maresciallo Diaz","Via dei Prati della Farnesina","Via della Farnesina","Via degli Orti della Farnesina","Via Cassia","Via Girolamo Boccardo","Via Antonio Serra","Via Angelo Messedaglia","Via Leprignano","Via Bevagna","Via Roccaporena","Via Achille Loria","Via Città della Pieve","Piazza Monteleone da Spoleto","Via Città di Castello","Via Francesco Saverio Nitti","Via di Vigna Stelluti","Largo di Vigna Stelluti","Via Marco Besso","Via Cesare Ferrero di Cambiano","Via Gerolamo Belloni","Via Stefano Jacini","Via Francesco Ferrara","Via Vilfredo Pareto","Via Pompeo Neri","Piazza Stefano Jacini","Via Napoleone Colajanni","Via Ghino Valenti","Via Giustino Fortunato","Via Francesco Coletti","Piazza Filippo Carli","Via Sallustio Bandini","Via Luigi Bodio","Area del borgo storico di Isola Farnese","Area del borgo storico di Cesano"]
+};
+
+const MUN_LABELS={"III":"Mun. III","V":"Mun. V","VI":"Mun. VI","VII":"Mun. VII","X":"Mun. X","XI":"Mun. XI","XII":"Mun. XII","XIV":"Mun. XIV","XV":"Mun. XV"};
+let activeMun="all";
+
+function buildMunPills(){
+  const c=document.getElementById("munPills");
+  let h=`<span class="pill all active" onclick="setMun('all',this)">Tutti</span>`;
+  Object.keys(VIE_DISPLAY).forEach(k=>{h+=`<span class="pill" onclick="setMun('${k}',this)">Mun. ${k}</span>`;});
+  c.innerHTML=h;
+}
+function setMun(m,el){activeMun=m;document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));el.classList.add("active");filterVie();}
+function filterVie(){
+  const q=document.getElementById("viaSearch").value.toLowerCase();
+  const body=document.getElementById("viaBody");
+  let rows=[],count=0;
+  const keys=activeMun==="all"?Object.keys(VIE_DISPLAY):[activeMun];
+  keys.forEach(k=>{(VIE_DISPLAY[k]||[]).forEach(v=>{if(!q||v.toLowerCase().includes(q)){rows.push(`<tr><td><span class="mun-badge">${MUN_LABELS[k]}</span></td><td>${v}</td></tr>`);count++;}});});
+  body.innerHTML=rows.length?rows.join(""):`<tr><td colspan="2" style="text-align:center;padding:24px;color:#888">Nessuna via trovata</td></tr>`;
+  document.getElementById("viaCount").textContent=`${count} vie`;
+}
+
+const ZONES=[
+  {id:1,name:"Parioli",sub:"Municipio II – Roma Nord",area:"nord",rank:1,income:72000,traffic:3,top:true,tags:["benessere altissimo","famiglie","diplomatici"],note:"Massima priorità. Strade interne non vietate.",timing:"Mattina 9–12, lun–ven",warns:[]},
+  {id:2,name:"Trieste – Salario",sub:"Municipio II/III – Roma Nord-Est",area:"nord",rank:2,income:60000,traffic:5,top:true,tags:["reddito elevato","molto popolato","strade commerciali"],note:"Alta densità. Ottimo mattina e pomeriggio.",timing:"Mattina e pomeriggio",warns:["Alcune vie del Mun. III vietate"]},
+  {id:3,name:"Vigna Clara",sub:"Municipio XV – Roma Nord",area:"nord",rank:3,income:55000,traffic:3,top:true,tags:["residenziale esclusivo","famiglie alto reddito"],note:"Zona silenziosa e benestante.",timing:"Mattina 9–12",warns:["Via Cassia e Flaminia parzialmente vietate"]},
+  {id:4,name:"Prati",sub:"Municipio I confine – Centro Ovest",area:"centro",rank:4,income:50000,traffic:5,top:true,tags:["centralissimo","grande passaggio","clientela mista"],note:"Confina col Mun. I. Muoviti sulle traverse interne.",timing:"Tutto il giorno",warns:["Confina con Mun. I","Via Flaminia parzialmente vietata"]},
+  {id:5,name:"Flaminio",sub:"Municipio II – Roma Nord",area:"nord",rank:5,income:50000,traffic:4,top:false,tags:["culturale","giovani professionisti"],note:"Zona dinamica. Buon pomeriggio.",timing:"Pomeriggio 15–19",warns:[]},
+  {id:6,name:"Monteverde",sub:"Municipio XII – Roma Ovest",area:"centro",rank:6,income:45000,traffic:4,top:true,tags:["residenziale","popolato","clientela femminile"],note:"Sabato mattina molto vivace.",timing:"Sabato mattina 9–13",warns:["Viale dei Colli Portuensi vietato"]},
+  {id:7,name:"Aventino",sub:"Municipio I confine – Centro Sud",area:"centro",rank:7,income:55000,traffic:2,top:false,tags:["esclusivo","ville di lusso","bassa affluenza"],note:"Clientela selezionata, poco passaggio.",timing:"Mattina infrasettimanale",warns:[]},
+  {id:8,name:"EUR",sub:"Municipio IX – Roma Sud",area:"sud",rank:8,income:42000,traffic:4,top:false,tags:["uffici","famiglie","moderno"],note:"Ottimo feriali ore centrali.",timing:"Feriali 11–14 e 16–19",warns:[]},
+  {id:9,name:"Appio Latino",sub:"Municipio VII – Roma Sud-Est",area:"sudest",rank:9,income:32000,traffic:5,top:true,tags:["molto popolato","rete commerciale","318.000 ab."],note:"Mun. più popoloso. Strade interne non nell'Allegato A.",timing:"Mattina e pomeriggio",warns:["Circonv. Tuscolana, Via Tuscolana, Via Appia Nuova vietate"]},
+  {id:10,name:"San Giovanni – Appio Tuscolano",sub:"Municipio VII – Roma Sud-Est",area:"sudest",rank:10,income:33000,traffic:5,top:false,tags:["nodo commerciale","metro A+C"],note:"Grandissimo passaggio. Traverse interne libere.",timing:"Tutto il giorno",warns:["Rispetta 200 m dalle stazioni metro","Evita Via Tuscolana, Via Appia Nuova"]},
+  {id:11,name:"Garbatella",sub:"Municipio VIII – Roma Sud",area:"sud",rank:11,income:30000,traffic:3,top:false,tags:["in riqualificazione","giovani e famiglie"],note:"Quartiere alla moda in crescita.",timing:"Pomeriggio 15–19",warns:["200 m dalla stazione metro Garbatella"]},
+  {id:12,name:"Ostiense",sub:"Municipio VIII – Roma Sud",area:"sud",rank:12,income:28000,traffic:4,top:false,tags:["universitari","creativi","in forte crescita"],note:"Clientela giovane, ottima pomeriggio e weekend.",timing:"Pomeriggio e weekend",warns:[]},
+  {id:13,name:"Giuliano-Dalmata",sub:"Municipio IX – adiacente EUR",area:"sud",rank:13,income:38000,traffic:2,top:false,tags:["residenziale","famiglie stabili","poco presidiato"],note:"Buon potere d'acquisto, poca concorrenza.",timing:"Mattina infrasettimanale",warns:[]}
+];
+const INC_MAX=72000;
+let zoneMode="all";
+function setMode(m){zoneMode=m;document.getElementById("btnAll").classList.toggle("active",m==="all");document.getElementById("btnTop").classList.toggle("active",m==="top");renderZone();}
+function renderZone(){
+  const sort=document.getElementById("sortSel").value;
+  const area=document.getElementById("areaSel").value;
+  let zones=ZONES.filter(z=>area==="all"||z.area===area);
+  if(zoneMode==="top") zones=zones.filter(z=>z.top);
+  if(sort==="income") zones=[...zones].sort((a,b)=>b.income-a.income);
+  else if(sort==="traffic") zones=[...zones].sort((a,b)=>b.traffic-a.traffic);
+  else zones=[...zones].sort((a,b)=>a.rank-b.rank);
+  const grid=document.getElementById("zoneGrid");
+  if(!zones.length){grid.innerHTML=`<div class="no-results">Nessuna zona trovata.</div>`;return;}
+  grid.innerHTML=zones.map(z=>{
+    const pct=Math.round((z.income/INC_MAX)*100);
+    const stars="●".repeat(z.traffic)+"○".repeat(5-z.traffic);
+    const topBadge=z.top?`<span class="zone-top-badge">Consigliata</span><br>`:"";
+    const tags=z.tags.map(t=>`<span class="tag blue">${t}</span>`).join("");
+    const warns=z.warns.length?z.warns.map(w=>`<div style="font-size:11px;color:#854f0b;margin-top:2px">⚠ ${w}</div>`).join(""):"";
+    return `<div class="zone-card${z.top?" top":""}">
+      ${topBadge}<div class="zone-name">${z.name}</div><div class="zone-sub">${z.sub}</div>
+      <div class="zone-tags">${tags}</div>
+      <div class="income-bar-wrap"><span class="income-label">Reddito medio</span><div class="income-bar-bg"><div class="income-bar" style="width:${pct}%"></div></div><span class="income-val">~€${z.income.toLocaleString("it")}</span></div>
+      <div class="income-bar-wrap" style="margin-top:4px"><span class="income-label">Passaggio</span><span style="font-size:13px;color:#1d9e75;letter-spacing:1px">${stars}</span></div>
+      <div class="zone-note"><strong style="font-size:11px;color:#555">Orario consigliato:</strong> ${z.timing}<br>${z.note}${warns}</div>
+    </div>`;
+  }).join("");
+}
+
+function switchTab(i){document.querySelectorAll(".tab").forEach((t,idx)=>t.classList.toggle("active",idx===i));document.querySelectorAll(".panel").forEach((p,idx)=>p.classList.toggle("active",idx===i));}
+
+/* ── VERIFICA VIA ── */
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/['']/g,"'").trim();}
+
+function checkAllegatoA(via){
+  const n=norm(via);
+  for(const[mun,vlist]of Object.entries(VIE_NORM)){
+    for(const v of vlist){
+      const vn=norm(v);
+      if(n===vn||n.includes(vn)||vn.includes(n)){return{found:true,mun,via:v};}
+    }
+  }
+  return{found:false};
+}
+
+const PGTU_KW=["via tiburtina","via nomentana","via aurelia","via ostiense","via appia","via prenestina","via casilina","via tuscolana","via flaminia","via salaria","via cassia","viale libia","viale campi flegrei","viale delle milizie","corso trieste","via nazionale","via veneto","via cavour","via dei fori imperiali","viale del muro torto","lungotevere","via pontina","via laurentina","via ardeatina","viale marco polo","via della magliana","via trionfale","via del mare","viale cristoforo colombo","corso d'italia","via nomentana"];
+
+function checkPGTU(via){const n=norm(via);return PGTU_KW.some(k=>n.includes(k));}
+
+function haversine(a,b,c,d){const R=6371000,dl=(c-a)*Math.PI/180,dm=(d-b)*Math.PI/180,x=Math.sin(dl/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dm/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+
+function closest(els,lat,lon){let best=null,bd=Infinity;for(const el of els){const la=el.lat||(el.center?.lat);const lo=el.lon||(el.center?.lon);if(!la)continue;const d=haversine(lat,lon,la,lo);if(d<bd){bd=d;best={el,d};}}return best;}
+
+async function geocode(via,civico){
+  const q=civico?`${via} ${civico}, Roma, Italia`:`${via}, Roma, Italia`;
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=3&countrycodes=it&q=${encodeURIComponent(q)}`,{headers:{"Accept-Language":"it","User-Agent":"CommerciAmbRoma/1.0"}});
+  if(!r.ok) throw new Error("Errore di rete nella geocodifica.");
+  const d=await r.json();
+  if(!d.length) throw new Error("Indirizzo non trovato. Prova con il nome completo (es. Via Tiburtina) senza abbreviazioni.");
+  return d[0];
+}
+
+async function overpass(q){
+  const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:`[out:json][timeout:12];${q};out center;`});
+  if(!r.ok) throw new Error("Overpass non disponibile");
+  return await r.json();
+}
+
+function icon(t){const m={ok:"✓",warn:"!",no:"✗",info:"i"};return `<div class="v-check-icon ${t}">${m[t]||"i"}</div>`;}
+
+const ZONE_GEO=[
+  {name:"Parioli",lat:41.9303,lon:12.4900,radius:1200,income:72000,traffic:3,timing:"Mattina 9–12, lun–ven"},
+  {name:"Trieste – Salario",lat:41.9230,lon:12.5130,radius:1400,income:60000,traffic:5,timing:"Mattina e pomeriggio"},
+  {name:"Vigna Clara",lat:41.9494,lon:12.4710,radius:1200,income:55000,traffic:3,timing:"Mattina 9–12"},
+  {name:"Prati",lat:41.9087,lon:12.4653,radius:1000,income:50000,traffic:5,timing:"Tutto il giorno"},
+  {name:"Flaminio",lat:41.9255,lon:12.4682,radius:1100,income:50000,traffic:4,timing:"Pomeriggio 15–19"},
+  {name:"Monteverde",lat:41.8800,lon:12.4632,radius:1300,income:45000,traffic:4,timing:"Sabato mattina 9–13"},
+  {name:"Aventino",lat:41.8825,lon:12.4776,radius:900,income:55000,traffic:2,timing:"Mattina infrasettimanale"},
+  {name:"EUR",lat:41.8296,lon:12.4688,radius:1500,income:42000,traffic:4,timing:"Feriali 11–14 e 16–19"},
+  {name:"Appio Latino",lat:41.8768,lon:12.5081,radius:1300,income:32000,traffic:5,timing:"Mattina e pomeriggio"},
+  {name:"San Giovanni – Appio Tuscolano",lat:41.8852,lon:12.5100,radius:1000,income:33000,traffic:5,timing:"Tutto il giorno"},
+  {name:"Garbatella",lat:41.8672,lon:12.4936,radius:900,income:30000,traffic:3,timing:"Pomeriggio 15–19"},
+  {name:"Ostiense",lat:41.8564,lon:12.4808,radius:1000,income:28000,traffic:4,timing:"Pomeriggio e weekend"},
+  {name:"Giuliano-Dalmata",lat:41.8218,lon:12.4861,radius:900,income:38000,traffic:2,timing:"Mattina infrasettimanale"},
+  {name:"Torre Angela",lat:41.8700,lon:12.6100,radius:1400,income:22000,traffic:4,timing:"Mattina 9–13"},
+  {name:"Ponte di Nona",lat:41.8900,lon:12.6400,radius:1200,income:24000,traffic:3,timing:"Mattina e sabato"},
+  {name:"Borghesiana",lat:41.8400,lon:12.6200,radius:1200,income:21000,traffic:3,timing:"Mattina 9–12"},
+  {name:"Torre Spaccata – Giardinetti",lat:41.8650,lon:12.5800,radius:1100,income:23000,traffic:4,timing:"Mattina e pomeriggio"},
+  {name:"Castelverde",lat:41.8600,lon:12.6500,radius:1000,income:25000,traffic:2,timing:"Sabato mattina"}
+];
+
+function valutaPotenziale(lat,lon,via,verdict){
+  /* Prezzo medio capo: ~20€
+     Fascia di reddito IDEALE per questo prezzo: 20.000–42.000€
+     Troppo basso (<18k) → clientela con scarsa liquidità immediata
+     Troppo alto (>55k) → clientela preferisce negozi/boutique, non acquista da ambulante a 20€
+     Curva a campana centrata su ~32.000€; punteggio reddito = 100 - |income - 32000| / 400 (capped 0-100)
+     Passaggio pesa di più (65%) perché ad un prezzo basso conta il volume, non il profilo */
+  const INCOME_OPT=32000;
+  const INCOME_SPREAD=400;
+
+  function incomeScore(inc){
+    const raw=100-Math.abs(inc-INCOME_OPT)/INCOME_SPREAD;
+    return Math.max(0,Math.min(100,Math.round(raw)));
+  }
+
+  let best=null,bestScore=-1;
+  for(const z of ZONE_GEO){
+    const d=haversine(lat,lon,z.lat,z.lon);
+    if(d<=z.radius){
+      const isc=incomeScore(z.income)/100;
+      const tsc=z.traffic/5;
+      const score=isc*0.35+tsc*0.65;
+      if(score>bestScore){bestScore=score;best={...z,d:Math.round(d)};}
+    }
+  }
+
+  let isc=0,trafficPct=0,zoneName="",timing="",incomeVal=0,trafficVal=0;
+  if(best){
+    isc=incomeScore(best.income);
+    trafficPct=Math.round((best.traffic/5)*100);
+    incomeVal=best.income;trafficVal=best.traffic;
+    zoneName=best.name;timing=best.timing;
+    bestScore=Math.round(bestScore*100);
+  } else {
+    isc=60;trafficPct=40;bestScore=48;
+    incomeVal=28000;trafficVal=2;
+    zoneName="";timing="Verifica locale consigliata";
+  }
+
+  const scoreClass=bestScore>=62?"alto":bestScore>=42?"medio":"basso";
+  const scoreLabel=bestScore>=62?"Alto":bestScore>=42?"Medio":"Basso";
+  const incColor=isc>=65?"verde":isc>=40?"ambra":"rosso";
+  const traColor=trafficPct>=65?"verde":trafficPct>=40?"ambra":"rosso";
+  const zonaHtml=zoneName?`<div class="v-pot-zona-match">Zona: ${zoneName}</div>`:"";
+
+  let desc="";
+  if(verdict==="no"){
+    desc="La via è soggetta a restrizioni normative. Il potenziale commerciale non è valutabile.";
+  } else {
+    const iDescArr=[
+      [75,"Fascia di reddito ideale per un prezzo di ~20€: clientela abituata a fare acquisti impulsivi su prodotti accessibili, alta probabilità di conversione."],
+      [45,"Fascia di reddito compatibile con il tuo prezzo medio. La clientela può permettersi acquisti da 20€ senza pensarci troppo."],
+      [20,"Reddito troppo basso rispetto alla media: la clientela tende a posticipare acquisti non urgenti anche a 20€, oppure cerca occasioni ancora più basse. Puoi vendere, ma ti servirà più passaggio."],
+      [0,"Reddito molto alto: la clientela di questa zona tende a preferire boutique e negozi fissi per l'abbigliamento. Il prezzo di 20€ può essere visto come valore ma il target è meno propenso all'acquisto da ambulante."]
+    ];
+    const iDesc=iDescArr.find(([t])=>isc>=t)?.[1]||iDescArr[iDescArr.length-1][1];
+    const tDesc=trafficPct>=65?"Il passaggio pedonale è intenso: lavorando sul volume puoi compensare ampiamente il margine ridotto.":trafficPct>=40?"Il passaggio è discreto. Con il giusto posizionamento e orario puoi raggiungere buoni numeri.":"Il passaggio è limitato. A 20€ di prezzo medio ti servono almeno 15–20 clienti/giorno per coprire i costi: valuta se la zona regge.";
+    const rec=bestScore>=62?"Zona molto adatta al tuo prodotto: buon equilibrio tra reddito compatibile e volume di passaggio.":bestScore>=42?"Potenziale discreto. Funziona bene se scegli l'orario giusto e ti posizioni su strade ad alto transito pedonale.":"Zona poco ottimale per il tuo fascia di prezzo. Considera zone con più passaggio o reddito medio più allineato.";
+    desc=`${iDesc} ${tDesc} ${rec}`;
+  }
+
+  const timingHtml=verdict!=="no"?`<div class="v-pot-timing"><strong>Orario migliore stimato:</strong> ${timing}</div>`:"";
+
+  return `
+    <div class="v-potenziale">
+      <div class="v-pot-header">
+        <div>
+          <div class="v-pot-title">Potenziale commerciale <span style="font-size:11px;color:#888;font-weight:400">(prezzo medio ~€20)</span></div>
+          ${zonaHtml}
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:11px;color:#888;margin-bottom:2px">Punteggio</div>
+          <div class="v-pot-score ${scoreClass}">${verdict==="no"?"—":scoreLabel}</div>
+        </div>
+      </div>
+      <div class="v-pot-bars">
+        <div class="v-pot-bar-row">
+          <div class="v-pot-bar-label">Compatibilità reddito <span>~€${incomeVal.toLocaleString("it")}</span></div>
+          <div class="v-pot-bar-bg"><div class="v-pot-bar-fill ${incColor}" style="width:${verdict==="no"?0:isc}%"></div></div>
+        </div>
+        <div class="v-pot-bar-row">
+          <div class="v-pot-bar-label">Passaggio pedonale <span>${"●".repeat(trafficVal)+"○".repeat(5-trafficVal)}</span></div>
+          <div class="v-pot-bar-bg"><div class="v-pot-bar-fill ${traColor}" style="width:${verdict==="no"?0:trafficPct}%"></div></div>
+        </div>
+      </div>
+      <div class="v-pot-desc">${desc}${timingHtml}</div>
+    </div>`;
+}
+
+async function verificaVia(){
+  const via=document.getElementById("vInput").value.trim();
+  const civico=document.getElementById("civInput").value.trim();
+  if(!via){alert("Inserisci il nome della via.");return;}
+  const btn=document.getElementById("vBtn");
+  btn.disabled=true;btn.textContent="Ricerca...";
+  const out=document.getElementById("vOutput");
+  out.innerHTML=`<div class="v-loading">Geocodifica in corso…</div>`;
+  try{
+    const geo=await geocode(via,civico);
+    const lat=parseFloat(geo.lat),lon=parseFloat(geo.lon);
+    out.innerHTML=`<div class="v-loading">Analisi strutture vicine (ospedali, stazioni, ecc.)…</div>`;
+
+    const allegatoA=checkAllegatoA(via);
+    const isPgtu=checkPGTU(via);
+
+    const RADIUS=600;
+    let hospEls=[],metroEls=[],istitEls=[];
+    try{
+      const[h,m,i]=await Promise.all([
+        overpass(`(node["amenity"="hospital"](around:${RADIUS},${lat},${lon});way["amenity"="hospital"](around:${RADIUS},${lat},${lon});)`),
+        overpass(`(node["railway"="station"](around:${RADIUS},${lat},${lon});node["railway"="subway_entrance"](around:${RADIUS},${lat},${lon});node["station"="subway"](around:${RADIUS},${lat},${lon});node["railway"="halt"](around:${RADIUS},${lat},${lon});)`),
+        overpass(`(node["amenity"="police"](around:200,${lat},${lon});node["amenity"="townhall"](around:200,${lat},${lon});node["amenity"="courthouse"](around:200,${lat},${lon});)`)
+      ]);
+      hospEls=h.elements||[];metroEls=m.elements||[];istitEls=i.elements||[];
+    }catch(_){}
+
+    const nearH=closest(hospEls,lat,lon);
+    const nearM=closest(metroEls,lat,lon);
+    const nearI=closest(istitEls,lat,lon);
+
+    const MUN12_POLY={latMin:41.876,latMax:41.952,lonMin:12.440,lonMax:12.530};
+    const inMun12=lat>=MUN12_POLY.latMin&&lat<=MUN12_POLY.latMax&&lon>=MUN12_POLY.lonMin&&lon<=MUN12_POLY.lonMax;
+
+    const checks=[];
+    let verdict="ok";
+    let verdictText="Commercio ambulante probabilmente consentito";
+
+    if(allegatoA.found){
+      verdict="no";
+      verdictText="Via vietata – Allegato A del Regolamento";
+      checks.push({t:"no",l:"Allegato A – divieto esplicito",d:`"${via}" è elencata nell'Allegato A del Regolamento DAC 101/2023 (Municipio ${allegatoA.mun}). Il commercio itinerante è espressamente vietato su questa via.`});
+    } else {
+      checks.push({t:"ok",l:"Allegato A – via non in elenco",d:"La via non compare nell'elenco delle vie vietate dall'Allegato A."});
+    }
+
+    if(inMun12){
+      verdict="no";
+      verdictText="Area Municipio I/II – divieto totale di territorio";
+      checks.push({t:"no",l:"Municipio I / II – divieto totale",d:"Le coordinate ricadono nell'area del Municipio I o II (centro storico). Il commercio itinerante è vietato sull'intero territorio per tutela storica, artistica e ambientale (art. 40 c.9)."});
+    }
+
+    if(isPgtu){
+      if(verdict==="ok")verdict="no";
+      verdictText=verdict==="no"?verdictText:"Via di viabilità principale – commercio vietato";
+      checks.push({t:"no",l:"Viabilità principale PGTU",d:"Questa strada è classificata come via di viabilità principale nel PGTU (Delibera AC 21/2015). Il commercio itinerante è vietato sull'intera carreggiata (art. 40 c.12). Anche le strade confluenti nei primi 50 m sono soggette a divieto."});
+    } else if(!allegatoA.found&&!inMun12){
+      checks.push({t:"ok",l:"Viabilità principale PGTU – non classificata",d:"La via non risulta tra le arterie principali PGTU. Attenzione alle eventuali strade confluenti su arterie principali: nei primi 50 m si applica il divieto (art. 40 c.12)."});
+    }
+
+    if(nearH){
+      const d=Math.round(nearH.d);
+      const nome=nearH.el.tags?.name||"Ospedale";
+      if(d<200){if(verdict==="ok")verdict="no";checks.push({t:"no",l:`Ospedale entro 200 m – VIETATO`,d:`${nome} dista circa ${d} m. Il commercio itinerante è vietato entro 200 m dagli ospedali (art. 40 c.12).`});}
+      else if(d<350){if(verdict==="ok")verdict="warn";checks.push({t:"warn",l:`Ospedale a ${d} m – zona di attenzione`,d:`${nome} si trova a ${d} m. Il limite minimo è 200 m. Sei oltre la soglia ma verifica con precisione la distanza effettiva prima di operare.`});}
+      else{checks.push({t:"ok",l:`Ospedale a ${d} m – distanza ok`,d:`${nome} è a ${d} m, ben oltre il limite minimo di 200 m.`});}
+    } else {
+      checks.push({t:"ok",l:"Nessun ospedale rilevato entro 600 m",d:"Non sono stati rilevati ospedali nelle vicinanze immediate."});
+    }
+
+    if(nearM){
+      const d=Math.round(nearM.d);
+      const nome=nearM.el.tags?.name||nearM.el.tags?.["name:it"]||"Stazione metro/FS";
+      if(d<200){if(verdict==="ok")verdict="no";checks.push({t:"no",l:`Stazione entro 200 m – VIETATO`,d:`${nome} dista circa ${d} m. Il commercio itinerante è vietato entro 200 m dagli accessi delle stazioni metro e ferroviarie (art. 40 c.9 / c.12).`});}
+      else if(d<350){if(verdict==="ok")verdict="warn";checks.push({t:"warn",l:`Stazione a ${d} m – zona di attenzione`,d:`${nome} è a circa ${d} m. Il limite è 200 m dagli accessi (ingressi/tornelli). Verifica la distanza effettiva dall'entrata, non dal centro della stazione.`});}
+      else{checks.push({t:"ok",l:`Stazione a ${d} m – distanza ok`,d:`${nome} è a ${d} m, oltre il limite minimo di 200 m.`});}
+    } else {
+      checks.push({t:"ok",l:"Nessuna stazione metro/FS rilevata entro 600 m",d:"Non sono state rilevate stazioni nelle immediate vicinanze."});
+    }
+
+    if(nearI){
+      const d=Math.round(nearI.d);
+      const nome=nearI.el.tags?.name||"Sede istituzionale";
+      if(d<200){if(verdict==="ok")verdict="warn";checks.push({t:"warn",l:`Sede istituzionale a ${d} m`,d:`${nome} si trova a circa ${d} m. Il commercio è vietato entro 200 m da sedi istituzionali dello Stato (art. 40 c.9). Verifica la natura della struttura prima di operare.`});}
+    }
+
+    checks.push({t:"warn",l:"Posteggi fissi – verifica manuale necessaria",d:"Il commercio itinerante è vietato entro 500 m da posteggi fissi e mercati (art. 40 c.9). Non è verificabile automaticamente: controlla se nella zona sono presenti banchi fissi, chioschi o mercati regolari."});
+
+    checks.push({t:"warn",l:"Aree vincolate e siti religiosi – verifica manuale",d:"È vietato entro 200 m da aree vincolate D.Lgs. 42/2004 (beni culturali/paesaggio) e zone sottoposte a tutela, inclusi siti religiosi (art. 40 c.11). Nelle aree storiche di Roma questi vincoli sono molto diffusi."});
+
+    if(civico){
+      checks.push({t:"info",l:`Civico n° ${civico} – verifica puntuale`,d:`Le distanze sono state calcolate sul punto esatto del civico ${civico} di ${via}. Questo garantisce una stima più precisa rispetto alla sola via.`});
+    } else {
+      checks.push({t:"info",l:"Nessun civico inserito – punto di via generico",d:"Senza numero civico, le coordinate si riferiscono a un punto generico della via. Per distanze più precise, inserisci il civico specifico dove intendi fermarti."});
+    }
+
+    checks.push({t:"info",l:"Regola operativa: max 2 fermate al giorno nello stesso posto",d:"Anche in zone consentite, non puoi fermarti nello stesso identico punto più di 2 volte nello stesso giorno (art. 40 c.14). La sosta è consentita solo per il tempo necessario a consegnare la merce e riscuotere il prezzo."});
+
+    const mapsUrl=`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=17`;
+    const checksHtml=checks.map(c=>`<div class="v-check-item">${icon(c.t)}<div><div class="v-check-label">${c.l}</div><div class="v-check-detail">${c.d}</div></div></div>`).join("");
+    const potenzialeHtml=valutaPotenziale(lat,lon,via,verdict);
+
+    out.innerHTML=`
+      <div class="v-result">
+        <div class="v-result-header">
+          <div class="v-verdict ${verdict}">${verdict==="ok"?"✓":verdict==="warn"?"!":"✗"}</div>
+          <div>
+            <div class="v-via-name">${via}${civico?" "+civico:""}, Roma</div>
+            <div class="v-coords">lat ${lat.toFixed(5)}, lon ${lon.toFixed(5)}</div>
+            <div class="v-status-text ${verdict}">${verdictText}</div>
+          </div>
+        </div>
+        ${potenzialeHtml}
+        <div class="v-checks">${checksHtml}</div>
+        <a class="v-map-link" href="${mapsUrl}" target="_blank">Apri su OpenStreetMap</a>
+        <div class="v-disclaimer">I risultati sono basati su Allegato A del Regolamento DAC 101/2023, art. 40 e dati OpenStreetMap (Nominatim + Overpass API). Sono indicativi e non sostituiscono una verifica legale o il parere del Municipio competente. Verifica sempre la situazione sul posto e controlla le ordinanze temporanee di Roma Capitale.</div>
+      </div>`;
+  }catch(e){
+    out.innerHTML=`<div class="alert-box"><strong>Errore:</strong> ${e.message}</div>`;
+  }finally{
+    btn.disabled=false;btn.textContent="Verifica";
+  }
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("vInput").addEventListener("keydown",e=>{if(e.key==="Enter")verificaVia();});
+  document.getElementById("civInput").addEventListener("keydown",e=>{if(e.key==="Enter")verificaVia();});
+});
+buildMunPills();filterVie();renderZone();
+</script>
+</body>
+</html>
