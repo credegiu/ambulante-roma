@@ -172,7 +172,7 @@ select{padding:9px 10px;border:0.5px solid #ccc;border-radius:8px;font-size:15px
     <label>Ordina per:</label>
     <select id="sortSel" onchange="renderZone()"><option value="rank">Priorità consigliata</option><option value="income">Reddito</option><option value="traffic">Passaggio</option></select>
     <label>Zona:</label>
-    <select id="areaSel" onchange="renderZone()"><option value="all">Tutta Roma</option><option value="nord">Roma Nord</option><option value="centro">Centro / Centro-ovest</option><option value="sud">Roma Sud</option><option value="sudest">Roma Sud-Est</option></select>
+    <select id="areaSel" onchange="renderZone()"><option value="all">Tutta Roma</option><option value="nord">Roma Nord</option><option value="centro">Centro / Centro-ovest</option><option value="sud">Roma Sud</option><option value="sudest">Roma Est / Sud-Est</option></select>
   </div>
   <div class="zone-grid" id="zoneGrid"></div>
 </div>
@@ -238,19 +238,94 @@ function filterVie(){
 }
 
 const ZONES=[
-  {id:1,name:"Parioli",sub:"Municipio II – Roma Nord",area:"nord",rank:1,income:72000,traffic:3,top:true,tags:["benessere altissimo","famiglie","diplomatici"],note:"Massima priorità. Strade interne non vietate.",timing:"Mattina 9–12, lun–ven",warns:[]},
-  {id:2,name:"Trieste – Salario",sub:"Municipio II/III – Roma Nord-Est",area:"nord",rank:2,income:60000,traffic:5,top:true,tags:["reddito elevato","molto popolato","strade commerciali"],note:"Alta densità. Ottimo mattina e pomeriggio.",timing:"Mattina e pomeriggio",warns:["Alcune vie del Mun. III vietate"]},
-  {id:3,name:"Vigna Clara",sub:"Municipio XV – Roma Nord",area:"nord",rank:3,income:55000,traffic:3,top:true,tags:["residenziale esclusivo","famiglie alto reddito"],note:"Zona silenziosa e benestante.",timing:"Mattina 9–12",warns:["Via Cassia e Flaminia parzialmente vietate"]},
-  {id:4,name:"Prati",sub:"Municipio I confine – Centro Ovest",area:"centro",rank:4,income:50000,traffic:5,top:true,tags:["centralissimo","grande passaggio","clientela mista"],note:"Confina col Mun. I. Muoviti sulle traverse interne.",timing:"Tutto il giorno",warns:["Confina con Mun. I","Via Flaminia parzialmente vietata"]},
-  {id:5,name:"Flaminio",sub:"Municipio II – Roma Nord",area:"nord",rank:5,income:50000,traffic:4,top:false,tags:["culturale","giovani professionisti"],note:"Zona dinamica. Buon pomeriggio.",timing:"Pomeriggio 15–19",warns:[]},
-  {id:6,name:"Monteverde",sub:"Municipio XII – Roma Ovest",area:"centro",rank:6,income:45000,traffic:4,top:true,tags:["residenziale","popolato","clientela femminile"],note:"Sabato mattina molto vivace.",timing:"Sabato mattina 9–13",warns:["Viale dei Colli Portuensi vietato"]},
-  {id:7,name:"Aventino",sub:"Municipio I confine – Centro Sud",area:"centro",rank:7,income:55000,traffic:2,top:false,tags:["esclusivo","ville di lusso","bassa affluenza"],note:"Clientela selezionata, poco passaggio.",timing:"Mattina infrasettimanale",warns:[]},
-  {id:8,name:"EUR",sub:"Municipio IX – Roma Sud",area:"sud",rank:8,income:42000,traffic:4,top:false,tags:["uffici","famiglie","moderno"],note:"Ottimo feriali ore centrali.",timing:"Feriali 11–14 e 16–19",warns:[]},
-  {id:9,name:"Appio Latino",sub:"Municipio VII – Roma Sud-Est",area:"sudest",rank:9,income:32000,traffic:5,top:true,tags:["molto popolato","rete commerciale","318.000 ab."],note:"Mun. più popoloso. Strade interne non nell'Allegato A.",timing:"Mattina e pomeriggio",warns:["Circonv. Tuscolana, Via Tuscolana, Via Appia Nuova vietate"]},
-  {id:10,name:"San Giovanni – Appio Tuscolano",sub:"Municipio VII – Roma Sud-Est",area:"sudest",rank:10,income:33000,traffic:5,top:false,tags:["nodo commerciale","metro A+C"],note:"Grandissimo passaggio. Traverse interne libere.",timing:"Tutto il giorno",warns:["Rispetta 200 m dalle stazioni metro","Evita Via Tuscolana, Via Appia Nuova"]},
-  {id:11,name:"Garbatella",sub:"Municipio VIII – Roma Sud",area:"sud",rank:11,income:30000,traffic:3,top:false,tags:["in riqualificazione","giovani e famiglie"],note:"Quartiere alla moda in crescita.",timing:"Pomeriggio 15–19",warns:["200 m dalla stazione metro Garbatella"]},
-  {id:12,name:"Ostiense",sub:"Municipio VIII – Roma Sud",area:"sud",rank:12,income:28000,traffic:4,top:false,tags:["universitari","creativi","in forte crescita"],note:"Clientela giovane, ottima pomeriggio e weekend.",timing:"Pomeriggio e weekend",warns:[]},
-  {id:13,name:"Giuliano-Dalmata",sub:"Municipio IX – adiacente EUR",area:"sud",rank:13,income:38000,traffic:2,top:false,tags:["residenziale","famiglie stabili","poco presidiato"],note:"Buon potere d'acquisto, poca concorrenza.",timing:"Mattina infrasettimanale",warns:[]}
+  /* Score 100 – reddito ideale + passaggio massimo */
+  {id:1,name:"Appio Latino",sub:"Municipio VII – Roma Sud-Est",area:"sudest",rank:1,income:32000,traffic:5,pop:200000,top:true,
+   tags:["reddito ideale per 20€","passaggio massimo","200.000 ab."],
+   note:"Prima scelta assoluta. Reddito centrato sul tuo prezzo, densità abitativa altissima. Strade interne non nell'Allegato A.",
+   timing:"Mattina 9–13, lun–sab",warns:["Via Tuscolana, Via Appia Nuova, Circonv. Tuscolana vietate – rimani sulle traverse"]},
+
+  /* Score 99 */
+  {id:2,name:"San Giovanni – Appio Tuscolano",sub:"Municipio VII – Roma Sud-Est",area:"sudest",rank:2,income:33000,traffic:5,pop:118000,top:true,
+   tags:["nodo commerciale","metro A+C","grandissimo passaggio"],
+   note:"Traverse interne tra Via Latina e Viale Furio Camillo libere da divieti. Ottimo tutto il giorno.",
+   timing:"Tutto il giorno",warns:["200 m dagli accessi metro San Giovanni e Re di Roma","Evita Via Tuscolana e Via Appia Nuova"]},
+
+  /* Score 95 */
+  {id:3,name:"Trieste – Salario",sub:"Municipio III/IV – Roma Nord-Est",area:"nord",rank:3,income:38000,traffic:5,pop:120000,top:true,
+   tags:["reddito buono","120.000 ab.","strade commerciali dense"],
+   note:"Reddito leggermente sopra l'ideale ma grandissimo passaggio compensa. Traverse interne libere.",
+   timing:"Mattina e pomeriggio",warns:["Alcune vie del Mun. III nell'Allegato A – controlla prima"]},
+
+  /* Score 95 – con avviso confine */
+  {id:4,name:"Trastevere",sub:"Municipio XII – confine Municipio I",area:"centro",rank:4,income:38000,traffic:5,pop:55000,top:true,
+   tags:["molto frequentato","turisti + residenti","buon potere d'acquisto"],
+   note:"Altissimo passaggio tutto il giorno. Rimani sulle strade interne del Municipio XII, lontano dal Tevere.",
+   timing:"Mattina e pomeriggio",warns:["Confina con Municipio I – opera solo sul lato Mun. XII (Via Trastevere e traverse)","Rispetta 200 m da siti religiosi (numerosi)"]},
+
+  /* Score 85 */
+  {id:5,name:"Pigneto",sub:"Municipio V – Roma Est",area:"sudest",rank:5,income:30000,traffic:4,pop:40000,top:true,
+   tags:["in forte crescita","giovani e famiglie","reddito ideale"],
+   note:"Quartiere trendy con reddito perfetto per il tuo prezzo. Weekend e venerdì sera molto vivaci.",
+   timing:"Mattina lun–ven, pomeriggio weekend",warns:[]},
+
+  /* Score 84 */
+  {id:6,name:"Ostiense",sub:"Municipio VIII – Roma Sud",area:"sud",rank:6,income:28000,traffic:4,pop:55000,top:true,
+   tags:["universitari","creativi","buon passaggio"],
+   note:"Reddito leggermente sotto l'ideale ma clientela giovane molto propensa all'acquisto impulsivo.",
+   timing:"Pomeriggio e weekend",warns:[]},
+
+  {id:7,name:"Cinecittà – Don Bosco",sub:"Municipio VII – Roma Sud-Est",area:"sudest",rank:7,income:29000,traffic:4,pop:90000,top:true,
+   tags:["90.000 ab.","reddito ideale","famiglie"],
+   note:"Grande municipio popoloso con reddito centrato sul tuo prezzo. Poca concorrenza di ambulanti.",
+   timing:"Mattina 9–13",warns:["Evita Via Tuscolana (vietata)"]},
+
+  /* Score 83-82 */
+  {id:8,name:"Prenestino",sub:"Municipio V – Roma Est",area:"sudest",rank:8,income:27000,traffic:4,pop:70000,top:false,
+   tags:["70.000 ab.","famiglie","reddito compatibile"],
+   note:"Quartiere popolare denso. Buon volume di passaggio nelle ore di punta mattutine.",
+   timing:"Mattina 8–12",warns:["Via Prenestina vietata – opera sulle traverse"]},
+
+  {id:9,name:"Centocelle",sub:"Municipio V/VII – Roma Est",area:"sudest",rank:9,income:26000,traffic:4,pop:85000,top:false,
+   tags:["85.000 ab.","molto popolare","in riqualificazione"],
+   note:"Zona in crescita, molto densa. Clientela abituata a spendere in modo pratico.",
+   timing:"Mattina e sabato",warns:["Via Casilina vietata – rimani sulle vie interne"]},
+
+  /* Score 79-78 */
+  {id:10,name:"Torre Spaccata – Giardinetti",sub:"Municipio VI – Roma Est",area:"sudest",rank:10,income:23000,traffic:4,pop:65000,top:true,
+   tags:["65.000 ab.","reddito compatibile","Municipio VI"],
+   note:"Buon volume di passaggio per il Municipio VI. Via dei Giardinetti è vietata – usa le traverse.",
+   timing:"Mattina 9–12",warns:["Via di Torre Spaccata e Via dei Giardinetti vietate – controlla Allegato A"]},
+
+  {id:11,name:"Torre Angela",sub:"Municipio VI – Roma Est",area:"sudest",rank:11,income:22000,traffic:4,pop:87000,top:true,
+   tags:["87.000 ab. – la più popolata del Mun. VI","buon passaggio"],
+   note:"La zona più abitata del Municipio VI. Volume di passaggio sufficiente a compensare il reddito basso.",
+   timing:"Mattina 9–12",warns:["Molte vie dell'Allegato A – controlla sempre prima di fermarti"]},
+
+  {id:12,name:"Monteverde",sub:"Municipio XII – Roma Ovest",area:"centro",rank:12,income:42000,traffic:4,pop:95000,top:false,
+   tags:["95.000 ab.","reddito nella fascia ok","famiglie"],
+   note:"Reddito un po' sopra l'ottimale ma grande densità. Sabato mattina molto vivace.",
+   timing:"Sabato mattina 9–13",warns:["Viale dei Colli Portuensi vietato"]},
+
+  {id:13,name:"EUR",sub:"Municipio IX – Roma Sud",area:"sud",rank:13,income:42000,traffic:4,pop:75000,top:false,
+   tags:["uffici e famiglie","75.000 ab.","ben collegato"],
+   note:"Reddito nella fascia alta della compatibilità. Funziona bene nei feriali nelle ore di uscita uffici.",
+   timing:"Feriali 11–14 e 16–19",warns:[]},
+
+  /* Score 72-70 */
+  {id:14,name:"Garbatella",sub:"Municipio VIII – Roma Sud",area:"sud",rank:14,income:30000,traffic:3,pop:35000,top:false,
+   tags:["reddito ideale","in riqualificazione","meno affollata"],
+   note:"Reddito perfetto per il tuo prezzo ma passaggio limitato. Pomeriggi e fine settimana i momenti migliori.",
+   timing:"Pomeriggio 15–19",warns:["200 m dalla stazione metro Garbatella"]},
+
+  {id:15,name:"Ponte di Nona",sub:"Municipio VI – Roma Est",area:"sudest",rank:15,income:24000,traffic:3,pop:40000,top:false,
+   tags:["Municipio VI","famiglie giovani","centro commerciale Roma Est vicino"],
+   note:"Quartiere relativamente nuovo con famiglie giovani. Sabato mattina il momento migliore.",
+   timing:"Sabato mattina",warns:["Via Prenestina e Via Collatina vietate – usa le strade interne"]},
+
+  {id:16,name:"Borghesiana",sub:"Municipio VI – Roma Est",area:"sudest",rank:16,income:21000,traffic:3,pop:52000,top:false,
+   tags:["52.000 ab.","Municipio VI","famiglie"],
+   note:"Buona densità abitativa per il Municipio VI. Reddito basso ma clientela propensa a spendere 20€.",
+   timing:"Mattina 9–12",warns:["Via di Borghesiana vietata – controlla le traverse"]}
 ];
 const INC_MAX=72000;
 let zoneMode="all";
@@ -276,6 +351,7 @@ function renderZone(){
       <div class="zone-tags">${tags}</div>
       <div class="income-bar-wrap"><span class="income-label">Reddito medio</span><div class="income-bar-bg"><div class="income-bar" style="width:${pct}%"></div></div><span class="income-val">~€${z.income.toLocaleString("it")}</span></div>
       <div class="income-bar-wrap" style="margin-top:4px"><span class="income-label">Passaggio</span><span style="font-size:13px;color:#1d9e75;letter-spacing:1px">${stars}</span></div>
+      <div class="income-bar-wrap" style="margin-top:4px"><span class="income-label">Abitanti zona</span><span style="font-size:12px;color:#555;font-weight:500">~${z.pop?z.pop.toLocaleString("it"):"-"}</span></div>
       <div class="zone-note"><strong style="font-size:11px;color:#555">Orario consigliato:</strong> ${z.timing}<br>${z.note}${warns}</div>
     </div>`;
   }).join("");
